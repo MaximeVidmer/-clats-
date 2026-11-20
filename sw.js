@@ -1,0 +1,10 @@
+const V='eclats-202611201532';const CORE=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','icon-512-maskable.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.allSettled(CORE.map(u=>fetch(u,{cache:'reload'}).then(r=>{if(r&&r.ok)return c.put(u,r)}))) ).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k.startsWith('eclats-')&&k!=='eclats-fonts').map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+const timeout=(p,ms)=>new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error('timeout')),ms);p.then(v=>{clearTimeout(t);res(v)},err=>{clearTimeout(t);rej(err)})});
+async function page(r){const c=await caches.open(V);try{const x=await timeout(fetch(r),5000);if(x&&x.ok){c.put('index.html',x.clone());return x}throw 0}catch(err){return(await c.match('index.html'))||(await c.match('./'))||(await caches.match('index.html',{ignoreSearch:true}))||new Response('<h1 style="font-family:sans-serif">Éclats de Bravoure</h1><p style="font-family:sans-serif">Ouvre le jeu une fois avec internet pour l\'installer hors connexion.</p>',{headers:{'Content-Type':'text/html; charset=utf-8'}})}}
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
+  if(/fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)){e.respondWith(caches.open('eclats-fonts').then(async c=>{const hit=await c.match(r);if(hit){fetch(r).then(x=>{if(x&&(x.ok||x.type==='opaque'))c.put(r,x)}).catch(()=>{});return hit}try{const x=await fetch(r);if(x&&(x.ok||x.type==='opaque'))c.put(r,x.clone());return x}catch(err){return new Response('',{status:200,headers:{'Content-Type':'text/css'}})}}));return}
+  if(u.origin!==location.origin)return;
+  if(r.mode==='navigate'||u.pathname.endsWith('/')||u.pathname.endsWith('index.html')){e.respondWith(page(r));return}
+  e.respondWith(caches.match(r,{ignoreSearch:true}).then(h=>h||fetch(r).then(x=>{if(x&&x.ok){const cp=x.clone();caches.open(V).then(c=>c.put(r,cp))}return x})))});
