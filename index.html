@@ -5103,7 +5103,7 @@ const R3D={run:false,t:0,camX:0,camZ:0,tz:0,fov:1,tfov:1,lights:[],opt:{},orb:nu
    en paysage, le combat passe sur deux colonnes.
    ========================================================= */
 let GS=1;
-function fitGame(){const g=$('#game'),R=document.documentElement,touch=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1;
+function fitGame(){if(window.__safe)return;const g=$('#game'),R=document.documentElement,touch=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1;
   const vv=window.visualViewport,de=document.documentElement,ok=v=>v&&v>=260;let vw=Math.round(vv&&vv.scale===1&&ok(vv.width)?vv.width:(ok(window.innerWidth)?window.innerWidth:(de.clientWidth||screen.width))),vh=Math.round(vv&&vv.scale===1&&ok(vv.height)?vv.height:(ok(window.innerHeight)?window.innerHeight:(de.clientHeight||screen.height)));vw=Math.max(260,vw||screen.width||390);vh=Math.max(260,vh||screen.height||700);
   if(!touch&&!(vw>vh*1.08&&vw>=860&&vh>=520)){R.classList.remove('full','land','rotate','desk');g.style.width=g.style.height=g.style.transform='';GS=1;return}
   R.classList.toggle('desk',!touch);
@@ -8729,7 +8729,7 @@ function start(data){
 }
 if(window.claude?.hot?.ready)window.claude.hot.ready(start);else start(window.claude?.hot?.data??{});
 </script>
-<div id="offB" style="position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;font:700 12px system-ui,sans-serif;padding:6px 12px;border-radius:999px;background:rgba(10,10,30,.85);color:#ffe08a;border:1px solid rgba(255,220,150,.4);display:none;pointer-events:none;white-space:nowrap"></div>
+<div id="offB" style="position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;font:700 12px system-ui,sans-serif;padding:6px 12px;border-radius:999px;background:rgba(10,10,30,.85);color:#ffe08a;border:1px solid rgba(255,220,150,.4);display:none;white-space:nowrap"></div>
 <script>
 (function(){const B=document.getElementById('offB');const show=(t,ok)=>{const ti=document.getElementById('sTitle');if(!ti||ti.hidden)return;B.textContent=t;B.style.color=ok?'#7ef0a6':'#ffe08a';B.style.display='block'};
  setInterval(()=>{const ti=document.getElementById('sTitle');if(!ti||ti.hidden)B.style.display='none'},800);
@@ -8739,6 +8739,20 @@ if(window.claude?.hot?.ready)window.claude.hot.ready(start);else start(window.cl
    let n=0;const t=setInterval(async()=>{if(await check()||++n>40)clearInterval(t)},1500)})})();
 setTimeout(()=>{try{const any=['sTitle','sChoose','sHub','sBattle','sResults'].some(id=>{const n=document.getElementById(id);return n&&!n.hidden});if(!any&&typeof show==='function')show('sTitle');if(typeof fitGame==='function')fitGame()}catch(e){}
  if(window.__errs&&window.__errs.length){const d=document.createElement('div');d.style.cssText='position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:99999;background:#5a0a14;color:#fff;font:12px system-ui,sans-serif;padding:8px 10px;border-radius:10px';d.textContent='Erreur au démarrage : '+window.__errs.slice(-3).join(' | ')+' (fais une capture pour Claude)';document.body.append(d);setTimeout(()=>d.remove(),20000)}},4000);
+</script>
+<style>html.safe,html.safe body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;padding:0!important;margin:0;display:block}html.safe #game{position:absolute!important;left:0;top:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important}html.safe #rot{display:none!important}</style>
+<script>
+(function(){const SA=(navigator.standalone===true)||matchMedia('(display-mode: standalone)').matches;window.__SA=SA;
+ const diag=()=>{const g=document.getElementById('game'),r=g?g.getBoundingClientRect():{},vv=window.visualViewport,ti=document.getElementById('sTitle'),cs=ti?getComputedStyle(ti):{};
+   return `fenêtre ${innerWidth}×${innerHeight} · écran ${screen.width}×${screen.height} · vv ${vv?Math.round(vv.width)+'×'+Math.round(vv.height)+' s'+vv.scale:'-'} · jeu ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}×${Math.round(r.height)} · ${document.documentElement.className} · GS ${typeof GS!=='undefined'?GS:'?'} · titre ${ti&&!ti.hidden?'visible':'caché'} op ${cs.opacity} · app ${SA?'oui':'non'} · err ${(window.__errs||[]).slice(-2).join(' | ')||'aucune'}`};
+ window.__diag=diag;
+ const bad=()=>{const g=document.getElementById('game');if(!g)return true;const r=g.getBoundingClientRect();return!(r.width>100&&r.height>100&&r.right>40&&r.bottom>40&&r.left<innerWidth-40&&r.top<innerHeight-40)};
+ const safe=()=>{const R=document.documentElement,g=document.getElementById('game');window.__safe=true;R.classList.remove('rotate','land');R.classList.add('safe');if(g){g.style.transform='';g.style.width='';g.style.height=''}try{GS=1}catch(e){}try{FX.resize()}catch(e){}};
+ const box=t=>{let d=document.getElementById('diagB');if(!d){d=document.createElement('div');d.id='diagB';d.style.cssText='position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:99999;background:rgba(40,8,30,.94);color:#fff;font:11px/1.35 system-ui,sans-serif;padding:8px 10px;border-radius:10px;border:1px solid #ff9ad6';d.onclick=()=>d.remove();document.body.append(d)}d.textContent=t};
+ const chk=n=>{try{if(bad()){const before=diag();safe();setTimeout(()=>{if(bad())box('Problème d\'affichage — fais une capture pour Claude : '+before+' → après correction : '+diag());},400)}}catch(e){}};
+ if(SA){setTimeout(()=>chk(1),1500);setTimeout(()=>chk(2),4500)}
+ let taps=0,tt=0;document.addEventListener('click',e=>{const b=document.getElementById('offB');if(!b||b.style.display==='none')return;const r=b.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top-10&&e.clientY<=r.bottom+10){taps++;clearTimeout(tt);tt=setTimeout(()=>taps=0,1500);if(taps>=3){taps=0;box(diag())}}},true);
+})();
 </script>
 </body>
 </html>
